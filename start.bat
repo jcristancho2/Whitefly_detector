@@ -19,19 +19,17 @@ echo 2) Solo instalar dependencias
 echo 3) Verificar sistema
 echo 4) Entrenar modelo
 echo 5) Iniciar servidor
-echo 6) Iniciar con Docker
-echo 7) Salir
+echo 6) Salir
 echo.
 
-set /p option="Selecciona una opcion (1-7): "
+set /p option="Selecciona una opcion (1-6): "
 
 if "%option%"=="1" goto FULL_SETUP
 if "%option%"=="2" goto INSTALL_DEPS
 if "%option%"=="3" goto CHECK_SYSTEM
 if "%option%"=="4" goto TRAIN_MODEL
 if "%option%"=="5" goto START_SERVER
-if "%option%"=="6" goto DOCKER_START
-if "%option%"=="7" goto EXIT
+if "%option%"=="6" goto EXIT
 goto MENU
 
 :FULL_SETUP
@@ -141,13 +139,6 @@ echo.
 echo    Presiona Ctrl+C para detener el servidor
 echo.
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
-goto MENU
-
-:DOCKER_START
-echo.
-echo [*] Iniciando con Docker...
-docker-compose up --build
-pause
 goto MENU
 
 :EXIT

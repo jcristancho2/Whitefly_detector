@@ -140,10 +140,9 @@ show_menu() {
     echo "3) Verificar sistema"
     echo "4) Entrenar modelo"
     echo "5) Iniciar servidor"
-    echo "6) Iniciar con Docker"
-    echo "7) Salir"
+    echo "6) Salir"
     echo ""
-    read -p "Selecciona una opción (1-7): " option
+    read -p "Selecciona una opción (1-6): " option
     
     case $option in
         1)
@@ -175,11 +174,7 @@ show_menu() {
             start_server
             ;;
         6)
-            echo "🐳 Iniciando con Docker..."
-            docker-compose up --build
-            ;;
-        7)
-            echo "👋 ¡Hasta luego!"
+            echo " ¡Hasta luego!"
             exit 0
             ;;
         *)
