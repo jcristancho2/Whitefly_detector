@@ -1,0 +1,13 @@
+{
+    "img_size": [
+        224,
+        224
+    ],
+    "classes": [
+        "sin_plaga",
+        "infestacion_leve",
+        "infestacion_severa"
+    ],
+    "timestamp": "2025-10-15T18:05:46.745812",
+    "epochs_trained": 42
+}

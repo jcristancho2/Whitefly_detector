@@ -16,6 +16,7 @@ import numpy as np
 from datetime import datetime
 import os
 import json
+from sklearn.utils.class_weight import compute_class_weight
 
 # Configuración
 IMG_SIZE = (224, 224)
@@ -188,12 +189,48 @@ class WhiteflyModelTrainer:
         """Entrena el modelo."""
         print("\n🚀 Iniciando entrenamiento...")
         
+        # Calcular class_weight para balancear las clases
+        # Obtener las etiquetas del generador de entrenamiento
+        train_labels = []
+        
+        # Iterar sobre el generador para obtener todas las etiquetas
+        print("📊 Calculando distribución de clases...")
+        for i in range(len(train_gen)):
+            batch_x, batch_y = train_gen[i]
+            # Convertir one-hot a índices de clase
+            batch_labels = np.argmax(batch_y, axis=1)
+            train_labels.extend(batch_labels)
+        
+        # Resetear el generador
+        train_gen.reset()
+        
+        train_labels = np.array(train_labels)
+        
+        # Calcular pesos automáticamente
+        class_weights = compute_class_weight(
+            'balanced',
+            classes=np.unique(train_labels),
+            y=train_labels
+        )
+        
+        # Convertir a diccionario
+        class_weight_dict = {i: weight for i, weight in enumerate(class_weights)}
+        
+        print(f"📊 Distribución de clases encontrada:")
+        unique, counts = np.unique(train_labels, return_counts=True)
+        for class_idx, count in zip(unique, counts):
+            class_name = ['infestacion_leve', 'infestacion_severa', 'sin_plaga'][class_idx]
+            print(f"   Clase {class_idx} ({class_name}): {count} muestras")
+        
+        print(f"📊 Pesos de clases calculados: {class_weight_dict}")
+        
         callbacks = self.create_callbacks()
         
         self.history = self.model.fit(
             train_gen,
             epochs=EPOCHS,
             validation_data=val_gen,
+            class_weight=class_weight_dict,  # 🔥 Balance de clases
             callbacks=callbacks,
             verbose=1
         )

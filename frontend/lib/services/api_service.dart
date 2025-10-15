@@ -15,15 +15,15 @@ class ApiService {
         'POST',
         Uri.parse('$baseUrl/api/detectar'),
       );
-      
+
       // Agregar archivo con Content-Type explícito
       var multipartFile = await http.MultipartFile.fromPath(
-        'file', 
+        'file',
         image.path,
         contentType: MediaType('image', 'jpeg'), // Especificar Content-Type
       );
       request.files.add(multipartFile);
-      
+
       var response = await request.send();
 
       print('Código de respuesta: ${response.statusCode}');
