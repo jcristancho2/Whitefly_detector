@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../pages/home_page.dart';
+import '../Pages/home_page.dart';
 
 class WhiteflyDetectorApp extends StatelessWidget {
-  const WhiteflyDetectorApp({Key? key}) : super(key: key);
+  const WhiteflyDetectorApp({super.key});
 
   @override
   Widget build(BuildContext context) {

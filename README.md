@@ -508,3 +508,17 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 ---
 
 **💡 Tip**: Para soporte técnico, abre un issue en GitHub o consulta la documentación de la API en `/docs`.
+
+
+comando para generar el apk 
+
+"cd /home/raucrow/jc2dev/Whitefly_detector/frontend
+flutter build apk --release"
+
+
+cuando no detecta el telefono
+
+adb devices
+
+Autorizar la depuración USB
+adb kill-server && adb start-server
