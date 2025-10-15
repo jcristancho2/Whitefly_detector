@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   // IP de tu computadora en la red local
@@ -9,13 +10,31 @@ class ApiService {
 
   Future<Map<String, dynamic>?> analyzeImage(File image) async {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/detect'));
-      request.files.add(await http.MultipartFile.fromPath('file', image.path));
+      print('Enviando imagen a: $baseUrl/api/detectar');
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/api/detectar'),
+      );
+      
+      // Agregar archivo con Content-Type explícito
+      var multipartFile = await http.MultipartFile.fromPath(
+        'file', 
+        image.path,
+        contentType: MediaType('image', 'jpeg'), // Especificar Content-Type
+      );
+      request.files.add(multipartFile);
+      
       var response = await request.send();
+
+      print('Código de respuesta: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         var body = await http.Response.fromStream(response);
+        print('Respuesta del servidor: ${body.body}');
         return json.decode(body.body);
+      } else {
+        var body = await http.Response.fromStream(response);
+        print('Error del servidor: ${body.body}');
       }
     } catch (e) {
       print('Error al analizar: $e');
@@ -25,7 +44,7 @@ class ApiService {
 
   Future<Map<String, dynamic>?> getHealthCheck() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/health'));
+      final response = await http.get(Uri.parse('$baseUrl/api/salud'));
       if (response.statusCode == 200) {
         return json.decode(response.body);
       }

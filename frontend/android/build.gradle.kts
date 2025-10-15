@@ -1,21 +1,24 @@
-// Archivo: android/build.gradle.kts
-
-plugins {
-    id("com.android.application") version "8.7.3" apply false
-    id("com.android.library") version "8.7.3" apply false
-    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
 }
 
-// Directorio de compilación raíz
-rootProject.buildDir = file("../build")
+val newBuildDir: Directory =
+    rootProject.layout.buildDirectory
+        .dir("../../build")
+        .get()
+rootProject.layout.buildDirectory.value(newBuildDir)
 
-// Configuración de subproyectos
 subprojects {
-    project.buildDir = file("${rootProject.buildDir}/${project.name}")
+    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
+    project.layout.buildDirectory.value(newSubprojectBuildDir)
+}
+subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// Tarea "clean"
 tasks.register<Delete>("clean") {
-    delete(rootProject.buildDir)
+    delete(rootProject.layout.buildDirectory)
 }
