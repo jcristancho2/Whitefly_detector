@@ -1,0 +1,28 @@
+# requirements.txt - Dependencias del backend (Python 3.13 / Arch)
+
+# Framework web
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+
+# Machine Learning
+tensorflow==2.20.0
+keras==3.10.0
+numpy==2.1.1
+opencv-python==4.10.0.84
+Pillow==10.4.0
+
+# Utilidades
+python-dotenv==1.0.1
+pydantic==2.9.2
+
+# Base de datos (opcional)
+# sqlalchemy==2.0.35
+# psycopg2-binary==2.9.9
+
+# Visualización
+matplotlib==3.9.2
+seaborn==0.13.2
+
+# Logs
+loguru==0.7.3
