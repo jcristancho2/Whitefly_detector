@@ -16,6 +16,7 @@ import numpy as np
 from datetime import datetime
 import os
 import json
+from sklearn.utils.class_weight import compute_class_weight
 
 # Configuración
 IMG_SIZE = (224, 224)
@@ -188,12 +189,39 @@ class WhiteflyModelTrainer:
         """Entrena el modelo."""
         print("\n🚀 Iniciando entrenamiento...")
         
+        # Calcular class_weight para balancear las clases
+        # Obtener las etiquetas del generador de entrenamiento
+        train_labels = []
+        
+        # Iterar sobre el generador para obtener todas las etiquetas
+        print("📊 Calculando distribución de clases...")
+        for i in range(len(train_gen)):
+            batch_x, batch_y = train_gen[i]
+            # Convertir one-hot a índices de clase
+            batch_labels = np.argmax(batch_y, axis=1)
+            train_labels.extend(batch_labels)
+        
+        # Resetear el generador
+        train_gen.reset()
+        
+        train_labels = np.array(train_labels)
+        
+        # Pesos manuales más equilibrados
+        class_weight_dict = {
+            0: 1.0,    # infestacion_leve
+            1: 5.0,    # infestacion_severa (en lugar de ~20)
+            2: 1.0     # sin_plaga
+        }
+        
+        print(f"📊 Pesos de clases manuales: {class_weight_dict}")
+        
         callbacks = self.create_callbacks()
         
         self.history = self.model.fit(
             train_gen,
             epochs=EPOCHS,
             validation_data=val_gen,
+            class_weight=class_weight_dict,  # 🔥 Balance de clases
             callbacks=callbacks,
             verbose=1
         )
