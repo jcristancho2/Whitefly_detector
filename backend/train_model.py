@@ -206,23 +206,14 @@ class WhiteflyModelTrainer:
         
         train_labels = np.array(train_labels)
         
-        # Calcular pesos automáticamente
-        class_weights = compute_class_weight(
-            'balanced',
-            classes=np.unique(train_labels),
-            y=train_labels
-        )
+        # Pesos manuales más equilibrados
+        class_weight_dict = {
+            0: 1.0,    # infestacion_leve
+            1: 5.0,    # infestacion_severa (en lugar de ~20)
+            2: 1.0     # sin_plaga
+        }
         
-        # Convertir a diccionario
-        class_weight_dict = {i: weight for i, weight in enumerate(class_weights)}
-        
-        print(f"📊 Distribución de clases encontrada:")
-        unique, counts = np.unique(train_labels, return_counts=True)
-        for class_idx, count in zip(unique, counts):
-            class_name = ['infestacion_leve', 'infestacion_severa', 'sin_plaga'][class_idx]
-            print(f"   Clase {class_idx} ({class_name}): {count} muestras")
-        
-        print(f"📊 Pesos de clases calculados: {class_weight_dict}")
+        print(f"📊 Pesos de clases manuales: {class_weight_dict}")
         
         callbacks = self.create_callbacks()
         
