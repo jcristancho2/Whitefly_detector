@@ -1,45 +1,43 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
 
 class ApiService {
-  // IP de tu computadora en la red local
-  final String baseUrl = 'http://192.168.1.7:8000';
-  // Para emulador, usar: 'http://10.0.2.2:8000' (Android) o 'http://localhost:8000'
+  final String baseUrl = 'http://your-api-url.com'; // Cambia por tu URL real
 
   Future<Map<String, dynamic>?> analyzeImage(File image) async {
     try {
-      print('Enviando imagen a: $baseUrl/api/detectar');
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$baseUrl/api/detectar'),
-      );
+      // Simulación de respuesta mientras configuras tu API real
+      await Future.delayed(const Duration(seconds: 2));
 
-      // Agregar archivo con Content-Type explícito
-      var multipartFile = await http.MultipartFile.fromPath(
-        'file',
-        image.path,
-        contentType: MediaType('image', 'jpeg'), // Especificar Content-Type
-      );
-      request.files.add(multipartFile);
+      // Respuesta simulada
+      return {
+        'detection': 'Mosca Blanca',
+        'confidence': 0.87,
+        'severity': 'Media',
+        'recommendations': [
+          'Aplicar tratamiento orgánico',
+          'Monitorear semanalmente',
+          'Mejorar ventilación',
+        ],
+      };
+
+      // Cuando tengas tu API real, descomenta esto:
+      /*
+      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/analyze'));
+      request.files.add(await http.MultipartFile.fromPath('image', image.path));
 
       var response = await request.send();
-
-      print('Código de respuesta: ${response.statusCode}');
-
       if (response.statusCode == 200) {
-        var body = await http.Response.fromStream(response);
-        print('Respuesta del servidor: ${body.body}');
-        return json.decode(body.body);
-      } else {
-        var body = await http.Response.fromStream(response);
-        print('Error del servidor: ${body.body}');
+        var responseData = await response.stream.bytesToString();
+        return json.decode(responseData);
       }
+      return null;
+      */
     } catch (e) {
-      print('Error al analizar: $e');
+      print('Error en análisis: $e');
+      return null;
     }
-    return null;
   }
 
   Future<Map<String, dynamic>?> getHealthCheck() async {

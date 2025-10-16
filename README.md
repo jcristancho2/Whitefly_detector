@@ -9,19 +9,24 @@ Sistema inteligente para la detección automática de infestaciones de mosca bla
 - [Arquitectura](#arquitectura)
 - [Requisitos del Sistema](#requisitos-del-sistema)
 - [Instalación](#instalación)
-- [Configuración del Backend](#configuración-del-backend)
-- [Configuración del Frontend](#configuración-del-frontend)
-- [Uso](#uso)
-- [API Endpoints](#api-endpoints)
+  - [Arch Linux](#arch-linux)
+  - [Windows](#windows)
+- [Configuración y Uso](#configuración-y-uso)
 - [Entrenamiento del Modelo](#entrenamiento-del-modelo)
+- [Desarrollo y Debugging](#desarrollo-y-debugging)
+- [API Endpoints](#api-endpoints)
 - [Estructura del Proyecto](#estructura-del-proyecto)
-- [Contribución](#contribución)
-- [Licencia](#licencia)
+- [Solución de Problemas](#solución-de-problemas)
 
 ## 📖 Descripción
 
-Este proyecto utiliza técnicas de machine learning para detectar y clasificar infestaciones de mosca blanca en cultivos agrícolas. El sistema puede identificar tres estados diferentes:
+Este proyecto utiliza técnicas de machine learning para detectar y clasificar infestaciones de mosca blanca en cultivos agrícolas. El sistema puede funcionar en dos modos:
 
+### **Modo Binario (Recomendado):**
+- 🟢 **Sin plaga**: Planta saludable
+- 🔴 **Con plaga**: Presencia de mosca blanca (cualquier nivel)
+
+### **Modo Multiclase:**
 - 🟢 **Sin plaga**: Planta saludable
 - 🟡 **Infestación leve**: Presencia mínima de mosca blanca
 - 🔴 **Infestación severa**: Alta concentración de mosca blanca
@@ -33,311 +38,460 @@ Este proyecto utiliza técnicas de machine learning para detectar y clasificar i
 - 🚀 **API REST**: Backend en FastAPI con documentación automática
 - 📊 **Análisis en Tiempo Real**: Procesamiento rápido de imágenes
 - 🎯 **Alta Precisión**: Modelo entrenado con técnicas de data augmentation
-- 📈 **Métricas Detalladas**: Logging y monitoreo del rendimiento
-- 🐳 **Docker Support**: Contenedorización para fácil despliegue
+- 📈 **Múltiples Modelos**: Soporte para clasificación binaria y multiclase
+- 🔄 **Cross-Platform**: Funciona en Android, iOS, Web y Desktop
 
 ## 🏗️ Arquitectura
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│                 │    │                 │    │                 │
-│  Flutter App    │◄──►│  FastAPI        │◄──►│  TensorFlow     │
-│  (Frontend)     │    │  (Backend)      │    │  Model          │
-│                 │    │                 │    │                 │
+│  Flutter App    │    │  FastAPI        │    │  TensorFlow     │
+│  (Android/iOS)  │◄──►│  Backend        │◄──►│  Model          │
+│  - Cámara       │    │  - Procesamiento│    │  - Clasificación│
+│  - Galería      │    │  - Validación   │    │  - Predicción   │
+│  - Historial    │    │  - API REST     │    │  - Confianza    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
 ## 💻 Requisitos del Sistema
 
-### Requisitos Generales
-- **Sistema Operativo**: Windows 10/11, macOS 10.15+, o Linux (Ubuntu 18.04+)
+### General
 - **RAM**: Mínimo 8GB (recomendado 16GB)
-- **Almacenamiento**: 5GB de espacio libre
+- **Almacenamiento**: 10GB de espacio libre
 - **Internet**: Conexión estable para descargar dependencias
 
 ### Backend (Python)
 - **Python**: 3.9 - 3.13
 - **pip**: Incluido con Python
-- **Entorno virtual**: Recomendado (venv o conda)
 
 ### Frontend (Flutter)
 - **Flutter SDK**: 3.8.1+
 - **Dart SDK**: 3.8.1+
-- **Android Studio** (para desarrollo Android)
-- **Xcode** (para desarrollo iOS, solo macOS)
+
+### Para Desarrollo Android
+- **Android Studio** o **VS Code**
+- **Android SDK**
+- **Dispositivo Android** con depuración USB habilitada
 
 ## 🚀 Instalación
 
-### Método Rápido (Recomendado)
+### Arch Linux
 
-El proyecto incluye scripts de instalación automática:
+#### 1. Preparar el Sistema
 
-#### En Linux/macOS:
+```bash
+# Actualizar el sistema
+sudo pacman -Syu
+
+# Instalar dependencias base
+sudo pacman -S git python python-pip python-virtualenv base-devel
+
+# Instalar Flutter (usando yay o paru)
+yay -S flutter
+# O manualmente:
+# sudo pacman -S flutter
+
+# Instalar herramientas de desarrollo Android (opcional)
+yay -S android-studio
+```
+
+#### 2. Clonar y Configurar el Proyecto
+
 ```bash
 # Clonar el repositorio
 git clone https://github.com/tu-usuario/whitefly-detector.git
 cd whitefly-detector
 
-# Dar permisos de ejecución
-chmod +x start.sh
+# Hacer el script ejecutable
+chmod +x setup_arch.sh
 
-# Ejecutar instalación completa
-./start.sh
+# Ejecutar instalación automática
+./setup_arch.sh
 ```
 
-#### En Windows:
-```cmd
-# Clonar el repositorio
-git clone https://github.com/tu-usuario/whitefly-detector.git
-cd whitefly-detector
+**Script de instalación automática (`setup_arch.sh`):**
 
-# Ejecutar instalación completa
-start.bat
-```
-
-### Instalación Manual
-
-Si prefieres instalar manualmente o necesitas más control:
-
-#### 1. Clonar el Repositorio
 ```bash
-git clone https://github.com/tu-usuario/whitefly-detector.git
-cd whitefly-detector
-```
+#!/bin/bash
 
-#### 2. Configurar Backend
-```bash
+echo "🌱 INSTALACIÓN DEL SISTEMA DE DETECCIÓN DE MOSCA BLANCA - ARCH LINUX"
+echo "=================================================================="
+
+# Configurar Backend
+echo "🔧 Configurando Backend..."
 cd backend
 
 # Crear entorno virtual
 python -m venv venv
 
 # Activar entorno virtual
-# En Linux/macOS:
 source venv/bin/activate
-# En Windows:
-venv\Scripts\activate
+
+# Actualizar pip
+pip install --upgrade pip
 
 # Instalar dependencias
-pip install --upgrade pip
 pip install -r requirements.txt
-```
-
-#### 3. Configurar Frontend
-```bash
-cd frontend
-
-# Instalar dependencias de Flutter
-flutter pub get
-
-# Verificar instalación
-flutter doctor
-```
-
-## ⚙️ Configuración del Backend
-
-### 1. Estructura de Directorios
-
-El script de instalación crea automáticamente la estructura necesaria, pero si instalas manualmente:
-
-```bash
-cd backend
 
 # Crear directorios necesarios
 mkdir -p models logs uploads
 mkdir -p dataset/{train,val,test}/{sin_plaga,infestacion_leve,infestacion_severa}
+mkdir -p dataset_binary/{train,val,test}/{sin_plaga,con_plaga}
+
+echo "✅ Backend configurado"
+
+# Configurar Frontend
+echo "🔧 Configurando Frontend..."
+cd ../frontend
+
+# Verificar Flutter
+flutter doctor
+
+# Instalar dependencias
+flutter pub get
+
+# Limpiar caché por si acaso
+flutter clean
+flutter pub get
+
+echo "✅ Frontend configurado"
+
+echo "🎉 Instalación completada!"
+echo ""
+echo "📝 Próximos pasos:"
+echo "1. Colocar dataset en backend/dataset/ (opcional)"
+echo "2. Entrenar modelo: cd backend && source venv/bin/activate && python train_model.py"
+echo "3. Iniciar backend: cd backend && source venv/bin/activate && uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+echo "4. Compilar APK: cd frontend && flutter build apk --release"
 ```
 
-### 2. Variables de Entorno
+### Windows
 
-Crea un archivo `.env` en el directorio `backend/`:
+#### 1. Preparar el Sistema
 
-```bash
-# backend/.env
-DEBUG=True
-MODEL_PATH=models/whitefly_detector.h5
-UPLOAD_DIR=uploads
-LOG_LEVEL=INFO
-MAX_FILE_SIZE=10485760  # 10MB
-ALLOWED_EXTENSIONS=jpg,jpeg,png
+```powershell
+# Instalar Chocolatey (si no está instalado)
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# Instalar dependencias
+choco install git python flutter-sdk -y
+
+# Reiniciar terminal para aplicar cambios PATH
 ```
 
-### 3. Preparar Dataset (Opcional)
+#### 2. Clonar y Configurar el Proyecto
 
-Si quieres entrenar tu propio modelo:
+```powershell
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/whitefly-detector.git
+cd whitefly-detector
 
-```bash
-# Organizar imágenes en la estructura:
-dataset/
-├── train/
+# Ejecutar instalación
+.\setup_windows.bat
+```
+
+**Script de instalación (`setup_windows.bat`):**
+
+```batch
+@echo off
+echo 🌱 INSTALACIÓN DEL SISTEMA DE DETECCIÓN DE MOSCA BLANCA - WINDOWS
+echo ================================================================
+
+echo 🔧 Configurando Backend...
+cd backend
+
+:: Crear entorno virtual
+python -m venv venv
+
+:: Activar entorno virtual
+call venv\Scripts\activate.bat
+
+:: Actualizar pip
+python -m pip install --upgrade pip
+
+:: Instalar dependencias
+pip install -r requirements.txt
+
+:: Crear directorios
+mkdir models logs uploads 2>nul
+mkdir dataset\train\sin_plaga dataset\train\infestacion_leve dataset\train\infestacion_severa 2>nul
+mkdir dataset\val\sin_plaga dataset\val\infestacion_leve dataset\val\infestacion_severa 2>nul
+mkdir dataset\test\sin_plaga dataset\test\infestacion_leve dataset\test\infestacion_severa 2>nul
+mkdir dataset_binary\train\sin_plaga dataset_binary\train\con_plaga 2>nul
+mkdir dataset_binary\val\sin_plaga dataset_binary\val\con_plaga 2>nul
+mkdir dataset_binary\test\sin_plaga dataset_binary\test\con_plaga 2>nul
+
+echo ✅ Backend configurado
+
+echo 🔧 Configurando Frontend...
+cd ..\frontend
+
+:: Verificar Flutter
+flutter doctor
+
+:: Instalar dependencias
+flutter pub get
+
+echo ✅ Frontend configurado
+
+echo 🎉 Instalación completada!
+echo.
+echo 📝 Próximos pasos:
+echo 1. Colocar dataset en backend\dataset\ (opcional)
+echo 2. Entrenar modelo: cd backend && venv\Scripts\activate && python train_model.py
+echo 3. Iniciar backend: cd backend && venv\Scripts\activate && uvicorn main:app --reload --host 0.0.0.0 --port 8000
+echo 4. Compilar APK: cd frontend && flutter build apk --release
+
+pause
+```
+
+## ⚙️ Configuración y Uso
+
+### 1. Preparar Dataset (Opcional)
+
+Si quieres entrenar tu propio modelo, organiza las imágenes así:
+
+```
+backend/dataset/
+├── train/ (70% de imágenes)
 │   ├── sin_plaga/          # Imágenes de plantas sanas
 │   ├── infestacion_leve/   # Imágenes con infestación leve
 │   └── infestacion_severa/ # Imágenes con infestación severa
-├── val/
+├── val/ (20% de imágenes)
 │   ├── sin_plaga/
 │   ├── infestacion_leve/
 │   └── infestacion_severa/
-└── test/
+└── test/ (10% de imágenes)
     ├── sin_plaga/
     ├── infestacion_leve/
     └── infestacion_severa/
 ```
 
-### 4. Entrenar Modelo (Opcional)
+### 2. Entrenar Modelo
+
+#### Modelo Binario (Recomendado)
 
 ```bash
-# Activar entorno virtual
-source venv/bin/activate  # Linux/macOS
-# venv\Scripts\activate   # Windows
+# Arch Linux
+cd backend
+source venv/bin/activate
+python binary_train_optimized.py
+```
 
-# Entrenar modelo
+```powershell
+# Windows
+cd backend
+venv\Scripts\activate
+python binary_train_optimized.py
+```
+
+**Características del modelo binario:**
+- ✅ **Más preciso**: Solo 2 clases reduce confusión
+- ✅ **Mejor balance**: ~50%/50% entre clases
+- ✅ **Más práctico**: Detecta si hay plaga o no
+- ✅ **Mayor accuracy**: Típicamente >95%
+
+#### Modelo Multiclase (3 clases)
+
+```bash
+# Arch Linux
+cd backend
+source venv/bin/activate
 python train_model.py
 ```
 
-### 5. Iniciar Backend
-
-```bash
-# Desarrollo
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-# Producción
-uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+```powershell
+# Windows
+cd backend
+venv\Scripts\activate
+python train_model.py
 ```
 
-El backend estará disponible en:
+### 3. Iniciar Backend
+
+```bash
+# Arch Linux
+cd backend
+source venv/bin/activate
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+```powershell
+# Windows
+cd backend
+venv\Scripts\activate
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**El backend estará disponible en:**
 - **API**: http://localhost:8000
 - **Documentación**: http://localhost:8000/docs
-- **Redoc**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/health
 
-## 📱 Configuración del Frontend
+### 4. Desarrollar App (Opcional)
 
-### 1. Verificar Instalación de Flutter
+#### Para desarrollo en tiempo real:
 
 ```bash
-flutter doctor
+cd frontend
+flutter run
 ```
 
-Asegúrate de que todos los checks estén en ✅ verde.
+#### Para generar APK de producción:
 
-### 2. Configurar Conexión con Backend
+```bash
+cd frontend
+flutter build apk --release
+```
 
-Edita el archivo de configuración para apuntar a tu backend:
+**El APK se generará en:** `frontend/build/app/outputs/flutter-apk/app-release.apk`
 
-```dart
-// lib/config/api_config.dart
-class ApiConfig {
-  static const String baseUrl = 'http://localhost:8000';  // Para desarrollo local
-  // static const String baseUrl = 'http://TU_SERVIDOR:8000';  // Para producción
-  
-  static const String detectEndpoint = '/detect';
-  static const int timeoutSeconds = 30;
+### 5. Configurar Dispositivo Android
+
+#### Habilitar depuración USB:
+
+1. **Configuración** → **Acerca del teléfono**
+2. Tocar **Número de compilación** 7 veces
+3. **Configuración** → **Opciones de desarrollador**
+4. Activar **Depuración USB**
+
+#### Verificar conexión:
+
+```bash
+# Instalar ADB (si no está)
+# Arch Linux:
+sudo pacman -S android-tools
+
+# Windows:
+choco install adb
+
+# Verificar dispositivos conectados
+adb devices
+
+# Si no aparece el dispositivo:
+adb kill-server && adb start-server
+```
+
+## 🧠 Entrenamiento del Modelo
+
+### Análisis de Dataset
+
+Para verificar la distribución de tu dataset:
+
+```bash
+cd backend
+source venv/bin/activate  # Linux
+# venv\Scripts\activate   # Windows
+
+# Analizar dataset actual
+echo "=== ANÁLISIS DEL DATASET ==="
+echo "TRAIN:"
+echo "  sin_plaga: $(find dataset/train/sin_plaga -name "*.jpg" | wc -l)"
+echo "  infestacion_leve: $(find dataset/train/infestacion_leve -name "*.jpg" | wc -l)"
+echo "  infestacion_severa: $(find dataset/train/infestacion_severa -name "*.jpg" | wc -l)"
+```
+
+### Configuración de Entrenamiento
+
+#### Modelo Binario (`binary_train_optimized.py`)
+
+```python
+# Configuración recomendada
+IMG_SIZE = (224, 224)
+BATCH_SIZE = 32
+EPOCHS = 30
+TARGET_PER_CLASS = 1400  # Imágenes balanceadas por clase
+```
+
+#### Modelo Multiclase (`train_model.py`)
+
+```python
+# Configuración con balance de clases
+IMG_SIZE = (224, 224)
+BATCH_SIZE = 32
+EPOCHS = 50
+# Pesos para balancear clases desbalanceadas
+class_weight = {
+    0: 1.0,    # infestacion_leve
+    1: 5.0,    # infestacion_severa (más peso por menos muestras)
+    2: 1.0     # sin_plaga
 }
 ```
 
-### 3. Instalar Dependencias
+### Métricas Esperadas
+
+#### Modelo Binario:
+- **Accuracy**: >95%
+- **Precision**: >94%
+- **Recall**: >94%
+- **F1-Score**: >94%
+
+#### Modelo Multiclase:
+- **Accuracy**: >90%
+- **Precision**: >88%
+- **Recall**: >88%
+- **F1-Score**: >88%
+
+## 🛠️ Desarrollo y Debugging
+
+### Logs del Sistema
 
 ```bash
-cd frontend
-flutter pub get
+# Backend logs
+tail -f backend/logs/*.log
+
+# Frontend logs (durante desarrollo)
+flutter logs
 ```
 
-### 4. Ejecutar la Aplicación
+### Probar API Manualmente
 
-#### Para Desarrollo Web:
 ```bash
-flutter run -d web-server --web-port 3000
+# Probar con imagen del dataset
+curl -X POST "http://localhost:8000/api/detectar" \
+     -F "file=@backend/dataset/test/infestacion_leve/imagen.jpg"
+
+# Respuesta esperada:
+{
+  "prediction": "con_plaga",
+  "confidence": 0.95,
+  "processing_time": 1.23,
+  "timestamp": "2024-01-15T10:30:00Z"
+}
 ```
 
-#### Para Android:
-```bash
-# Conectar dispositivo Android o iniciar emulador
-flutter devices
+### Actualizar Modelo en Backend
 
-# Ejecutar en dispositivo
-flutter run
+Para usar un modelo recién entrenado:
+
+```python
+# En backend/main.py, cambiar la línea:
+model = tf.keras.models.load_model('models/binary_whitefly_detector.h5')
+# model = tf.keras.models.load_model('models/whitefly_detector.h5')  # Para multiclase
 ```
 
-#### Para iOS (solo macOS):
-```bash
-# Abrir simulador iOS
-open -a Simulator
-
-# Ejecutar en simulador
-flutter run
-```
-
-#### Para Desktop:
-```bash
-# Windows
-flutter run -d windows
-
-# macOS
-flutter run -d macos
-
-# Linux
-flutter run -d linux
-```
-
-## 🎯 Uso
-
-### 1. Iniciar el Sistema Completo
-
-#### Usando Scripts de Inicio:
-```bash
-# Linux/macOS
-./start.sh
-
-# Windows
-start.bat
-```
-
-Selecciona la opción 5 para iniciar el servidor backend.
-
-#### Manualmente:
-
-**Terminal 1 - Backend:**
-```bash
-cd backend
-source venv/bin/activate  # Linux/macOS
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Terminal 2 - Frontend:**
-```bash
-cd frontend
-flutter run -d web-server --web-port 3000
-```
-
-### 2. Probar la API
-
-#### Usando curl:
-```bash
-# Subir imagen para análisis
-curl -X POST "http://localhost:8000/detect" \
-     -H "accept: application/json" \
-     -H "Content-Type: multipart/form-data" \
-     -F "file=@ruta/a/tu/imagen.jpg"
-```
-
-#### Usando la documentación interactiva:
-Visita http://localhost:8000/docs
-
-### 3. Usar la Aplicación
-
-1. Abre la aplicación en tu dispositivo/navegador
-2. Toca el botón de cámara o selecciona una imagen
-3. Espera el análisis automático
-4. Revisa los resultados y recomendaciones
+Luego reiniciar el backend.
 
 ## 📡 API Endpoints
 
-### POST `/detect`
+### POST `/api/detectar`
 Analiza una imagen para detectar infestación de mosca blanca.
 
 **Parámetros:**
 - `file`: Imagen en formato JPG, JPEG o PNG (máx. 10MB)
 
-**Respuesta:**
+**Respuesta Binaria:**
+```json
+{
+  "prediction": "con_plaga",
+  "confidence": 0.95,
+  "processing_time": 1.23,
+  "timestamp": "2024-01-15T10:30:00Z",
+  "model_type": "binary"
+}
+```
+
+**Respuesta Multiclase:**
 ```json
 {
   "prediction": "infestacion_leve",
@@ -349,140 +503,181 @@ Analiza una imagen para detectar infestación de mosca blanca.
   },
   "processing_time": 1.23,
   "timestamp": "2024-01-15T10:30:00Z",
-  "recommendations": [
-    "Implementar monitoreo regular",
-    "Considerar tratamiento preventivo"
-  ]
+  "model_type": "multiclass"
 }
 ```
 
 ### GET `/health`
 Verifica el estado del servicio.
 
-### GET `/model/info`
-Obtiene información sobre el modelo actual.
-
-## 🧠 Entrenamiento del Modelo
-
-### 1. Preparar Dataset
-
-```bash
-# Estructura requerida:
-dataset/
-├── train/ (70% de los datos)
-├── val/   (20% de los datos)
-└── test/  (10% de los datos)
-```
-
-### 2. Configurar Entrenamiento
-
-Edita `backend/train_model.py` para ajustar hiperparámetros:
-
-```python
-# Configuración de entrenamiento
-IMG_SIZE = (224, 224)
-BATCH_SIZE = 32
-EPOCHS = 50
-LEARNING_RATE = 0.001
-```
-
-### 3. Ejecutar Entrenamiento
-
-```bash
-cd backend
-python train_model.py
-```
-
-### 4. Monitorear Progreso
-
-Los logs y métricas se guardan en:
-- `logs/training_YYYYMMDD_HHMMSS.log`
-- `logs/tensorboard/` (visualizar con TensorBoard)
-
-## 🐳 Docker (Opcional)
-
-### Construcción y Ejecución
-
-```bash
-# Construir y ejecutar con Docker Compose
-docker-compose up --build
-
-# Solo backend
-docker build -t whitefly-backend ./backend
-docker run -p 8000:8000 whitefly-backend
-
-# Solo frontend
-docker build -t whitefly-frontend ./frontend
-docker run -p 3000:3000 whitefly-frontend
-```
+### GET `/docs`
+Documentación interactiva de la API (Swagger UI).
 
 ## 📁 Estructura del Proyecto
 
 ```
 whitefly-detector/
 ├── 📄 README.md
-├── 🚀 start.sh / start.bat
-├── 🐳 docker-compose.yml
+├── 🛠️ setup_arch.sh          # Script instalación Arch Linux
+├── 🛠️ setup_windows.bat      # Script instalación Windows
 ├── 📊 backend/
-│   ├── 🔧 main.py              # API principal
-│   ├── 🧠 train_model.py       # Entrenamiento del modelo
-│   ├── 🛠️ utils.py             # Utilidades
-│   ├── 📦 requirements.txt     # Dependencias Python
-│   ├── 🗂️ dataset/            # Datos de entrenamiento
-│   ├── 🤖 models/             # Modelos entrenados
-│   └── 📋 logs/               # Archivos de log
+│   ├── 🔧 main.py                    # API principal FastAPI
+│   ├── 🧠 train_model.py             # Entrenamiento multiclase
+│   ├── 🎯 binary_train_optimized.py  # Entrenamiento binario
+│   ├── 🔬 simple_train.py            # Modelo simple para debug
+│   ├── 🛠️ utils.py                   # Utilidades
+│   ├── 📦 requirements.txt           # Dependencias Python
+│   ├── 🗂️ dataset/                  # Datos multiclase
+│   │   ├── train/{sin_plaga,infestacion_leve,infestacion_severa}/
+│   │   ├── val/{sin_plaga,infestacion_leve,infestacion_severa}/
+│   │   └── test/{sin_plaga,infestacion_leve,infestacion_severa}/
+│   ├── 🗂️ dataset_binary/           # Datos binarios
+│   │   ├── train/{sin_plaga,con_plaga}/
+│   │   ├── val/{sin_plaga,con_plaga}/
+│   │   └── test/{sin_plaga,con_plaga}/
+│   ├── 🤖 models/                   # Modelos entrenados
+│   │   ├── binary_whitefly_detector.h5      # Modelo binario
+│   │   ├── whitefly_detector.h5             # Modelo multiclase
+│   │   └── simple_whitefly_detector.h5      # Modelo simple
+│   ├── 📋 logs/                     # Archivos de log
+│   └── 📁 venv/                     # Entorno virtual Python
 ├── 📱 frontend/
-│   ├── 🎯 lib/                # Código fuente Flutter
-│   ├── 🤖 android/            # Configuración Android
-│   ├── 🍎 ios/                # Configuración iOS
-│   ├── 🖥️ web/                # Recursos web
-│   └── 📦 pubspec.yaml        # Dependencias Flutter
+│   ├── 🎯 lib/                      # Código fuente Flutter
+│   │   ├── main.dart                # Punto de entrada
+│   │   ├── Pages/                   # Páginas de la app
+│   │   ├── services/api_service.dart # Comunicación con backend
+│   │   ├── models/                  # Modelos de datos
+│   │   └── Widgets/                 # Componentes reutilizables
+│   ├── 🤖 android/                  # Configuración Android
+│   ├── 🍎 ios/                      # Configuración iOS
+│   ├── 🖥️ web/                      # Configuración Web
+│   ├── 📦 pubspec.yaml              # Dependencias Flutter
+│   └── 🔨 build/app/outputs/flutter-apk/ # APK generado
 └── 📚 docs/
     └── 📖 PROYECTO MODIFICADO.docx
 ```
 
 ## 🔧 Solución de Problemas
 
-### Problemas Comunes
+### Error: Backend no inicia
 
-#### Backend no inicia:
 ```bash
-# Verificar Python
+# Verificar Python y dependencias
 python --version
-
-# Verificar dependencias
 pip list
 
 # Reinstalar dependencias
+cd backend
 pip install -r requirements.txt --force-reinstall
+
+# Verificar modelo
+ls -la models/
 ```
 
-#### Frontend no compila:
+### Error: Flutter no compila
+
 ```bash
-# Limpiar cache
+# Limpiar caché
 flutter clean
 flutter pub get
 
-# Verificar configuración
+# Verificar instalación
 flutter doctor
+
+# Solucionar problemas específicos
+flutter doctor --android-licenses  # Aceptar licencias Android
 ```
 
-#### Modelo no encontrado:
+### Error: Dispositivo Android no detectado
+
 ```bash
-# Verificar si existe el modelo
-ls -la backend/models/
+# Verificar ADB
+adb devices
 
-# Entrenar nuevo modelo
-cd backend && python train_model.py
+# Reiniciar ADB
+adb kill-server && adb start-server
+
+# Verificar depuración USB está habilitada
+# Configuración → Opciones de desarrollador → Depuración USB
 ```
 
-### Logs y Debugging
+### Error: Modelo da predicciones incorrectas
 
-- **Backend logs**: `backend/logs/`
-- **Frontend logs**: Consola del navegador/IDE
-- **API logs**: Terminal donde corre uvicorn
+```bash
+# Probar con modelo simple
+cd backend
+source venv/bin/activate
+python simple_train.py
 
-## 🤝 Contribución
+# Verificar dataset
+echo "Verificando distribución..."
+find dataset/train -name "*.jpg" | wc -l
+
+# Reentrenar modelo binario
+python binary_train_optimized.py
+```
+
+### Error: CUDA no disponible
+
+```bash
+# Normal en CPU - el mensaje es solo informativo
+# El modelo funcionará perfectamente en CPU
+# Para GPU en Arch Linux (opcional):
+sudo pacman -S cuda cudnn
+```
+
+### Performance Lenta
+
+```bash
+# Optimizar batch size
+# En train_model.py cambiar:
+BATCH_SIZE = 16  # Reducir si hay poco RAM
+
+# Usar modelo más ligero
+# Cambiar en train_model.py:
+base_model = tf.keras.applications.MobileNetV2(...)  # Ya es ligero
+```
+
+## 🚀 Scripts de Inicio Rápido
+
+### Arch Linux
+
+Crear `start_system.sh`:
+
+```bash
+#!/bin/bash
+echo "🌱 Iniciando Sistema de Detección de Mosca Blanca"
+
+# Terminal 1: Backend
+gnome-terminal -- bash -c "cd backend && source venv/bin/activate && uvicorn main:app --reload --host 0.0.0.0 --port 8000; exec bash"
+
+# Terminal 2: Logs
+gnome-terminal -- bash -c "cd backend && tail -f logs/*.log; exec bash"
+
+echo "✅ Sistema iniciado!"
+echo "📱 Backend: http://localhost:8000"
+echo "📖 Docs: http://localhost:8000/docs"
+echo "🔨 Para compilar APK: cd frontend && flutter build apk --release"
+```
+
+### Windows
+
+Crear `start_system.bat`:
+
+```batch
+@echo off
+echo 🌱 Iniciando Sistema de Detección de Mosca Blanca
+
+start "Backend" cmd /k "cd backend && venv\Scripts\activate && uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+
+echo ✅ Sistema iniciado!
+echo 📱 Backend: http://localhost:8000
+echo 📖 Docs: http://localhost:8000/docs
+echo 🔨 Para compilar APK: cd frontend && flutter build apk --release
+pause
+```
+
+## 👥 Contribución
 
 1. Fork el proyecto
 2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
@@ -494,486 +689,19 @@ cd backend && python train_model.py
 
 Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
-## 👥 Autores
-
-- **Tu Nombre** - *Desarrollo inicial* - [tu-usuario](https://github.com/tu-usuario)
-
-## 🙏 Agradecimientos
-
-- TensorFlow y Keras por las herramientas de ML
-- Flutter por el framework móvil
-- FastAPI por el framework web
-- La comunidad open source por las librerías utilizadas
-
 ---
 
-**💡 Tip**: Para soporte técnico, abre un issue en GitHub o consulta la documentación de la API en `/docs`.
+**💡 Tips Importantes:**
 
+- 🎯 **Usa el modelo binario** para mayor precisión
+- 📱 **Habilita depuración USB** en tu dispositivo Android
+- 🔄 **Reinicia el backend** después de entrenar un nuevo modelo
+- 📊 **Monitorea los logs** para debugging
+- 🚀 **Compila APK en release** para mejor performance
 
-```bash
-============================================================
-🌱 SISTEMA DE DETECCIÓN DE MOSCA BLANCA - ENTRENAMIENTO
-============================================================
-Found 1680 images belonging to 3 classes.
-Found 1506 images belonging to 3 classes.
-Found 846 images belonging to 3 classes.
+**🆘 Soporte:**
+- 📖 Documentación de API: http://localhost:8000/docs
+- 🐛 Issues: Abre un issue en GitHub
+- 💬 Discusiones: Usa las GitHub Discussions
 
-📊 Distribución del dataset:
-   Entrenamiento: 1680 imágenes
-   Validación: 1506 imágenes
-   Prueba: 846 imágenes
-
-🏷️  Clases: {'infestacion_leve': 0, 'infestacion_severa': 1, 'sin_plaga': 2}
-2025-10-15 16:51:10.236627: E external/local_xla/xla/stream_executor/cuda/cuda_platform.cc:51] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: UNKNOWN ERROR (303)
-
-✅ Modelo construido exitosamente
-📝 Total de parámetros: 3,086,659
-Model: "functional"
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Layer (type)                  ┃ Output Shape              ┃         Param # ┃ Connected to               ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ input_layer (InputLayer)      │ (None, 224, 224, 3)       │               0 │ -                          │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ Conv1 (Conv2D)                │ (None, 112, 112, 32)      │             864 │ input_layer[0][0]          │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ bn_Conv1 (BatchNormalization) │ (None, 112, 112, 32)      │             128 │ Conv1[0][0]                │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ Conv1_relu (ReLU)             │ (None, 112, 112, 32)      │               0 │ bn_Conv1[0][0]             │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ expanded_conv_depthwise       │ (None, 112, 112, 32)      │             288 │ Conv1_relu[0][0]           │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ expanded_conv_depthwise_BN    │ (None, 112, 112, 32)      │             128 │ expanded_conv_depthwise[0… │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ expanded_conv_depthwise_relu  │ (None, 112, 112, 32)      │               0 │ expanded_conv_depthwise_B… │
-│ (ReLU)                        │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ expanded_conv_project         │ (None, 112, 112, 16)      │             512 │ expanded_conv_depthwise_r… │
-│ (Conv2D)                      │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ expanded_conv_project_BN      │ (None, 112, 112, 16)      │              64 │ expanded_conv_project[0][… │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_1_expand (Conv2D)       │ (None, 112, 112, 96)      │           1,536 │ expanded_conv_project_BN[… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_1_expand_BN             │ (None, 112, 112, 96)      │             384 │ block_1_expand[0][0]       │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_1_expand_relu (ReLU)    │ (None, 112, 112, 96)      │               0 │ block_1_expand_BN[0][0]    │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_1_pad (ZeroPadding2D)   │ (None, 113, 113, 96)      │               0 │ block_1_expand_relu[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_1_depthwise             │ (None, 56, 56, 96)        │             864 │ block_1_pad[0][0]          │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_1_depthwise_BN          │ (None, 56, 56, 96)        │             384 │ block_1_depthwise[0][0]    │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_1_depthwise_relu (ReLU) │ (None, 56, 56, 96)        │               0 │ block_1_depthwise_BN[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_1_project (Conv2D)      │ (None, 56, 56, 24)        │           2,304 │ block_1_depthwise_relu[0]… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_1_project_BN            │ (None, 56, 56, 24)        │              96 │ block_1_project[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_2_expand (Conv2D)       │ (None, 56, 56, 144)       │           3,456 │ block_1_project_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_2_expand_BN             │ (None, 56, 56, 144)       │             576 │ block_2_expand[0][0]       │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_2_expand_relu (ReLU)    │ (None, 56, 56, 144)       │               0 │ block_2_expand_BN[0][0]    │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_2_depthwise             │ (None, 56, 56, 144)       │           1,296 │ block_2_expand_relu[0][0]  │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_2_depthwise_BN          │ (None, 56, 56, 144)       │             576 │ block_2_depthwise[0][0]    │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_2_depthwise_relu (ReLU) │ (None, 56, 56, 144)       │               0 │ block_2_depthwise_BN[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_2_project (Conv2D)      │ (None, 56, 56, 24)        │           3,456 │ block_2_depthwise_relu[0]… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_2_project_BN            │ (None, 56, 56, 24)        │              96 │ block_2_project[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_2_add (Add)             │ (None, 56, 56, 24)        │               0 │ block_1_project_BN[0][0],  │
-│                               │                           │                 │ block_2_project_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_3_expand (Conv2D)       │ (None, 56, 56, 144)       │           3,456 │ block_2_add[0][0]          │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_3_expand_BN             │ (None, 56, 56, 144)       │             576 │ block_3_expand[0][0]       │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_3_expand_relu (ReLU)    │ (None, 56, 56, 144)       │               0 │ block_3_expand_BN[0][0]    │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_3_pad (ZeroPadding2D)   │ (None, 57, 57, 144)       │               0 │ block_3_expand_relu[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_3_depthwise             │ (None, 28, 28, 144)       │           1,296 │ block_3_pad[0][0]          │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_3_depthwise_BN          │ (None, 28, 28, 144)       │             576 │ block_3_depthwise[0][0]    │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_3_depthwise_relu (ReLU) │ (None, 28, 28, 144)       │               0 │ block_3_depthwise_BN[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_3_project (Conv2D)      │ (None, 28, 28, 32)        │           4,608 │ block_3_depthwise_relu[0]… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_3_project_BN            │ (None, 28, 28, 32)        │             128 │ block_3_project[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_4_expand (Conv2D)       │ (None, 28, 28, 192)       │           6,144 │ block_3_project_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_4_expand_BN             │ (None, 28, 28, 192)       │             768 │ block_4_expand[0][0]       │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_4_expand_relu (ReLU)    │ (None, 28, 28, 192)       │               0 │ block_4_expand_BN[0][0]    │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_4_depthwise             │ (None, 28, 28, 192)       │           1,728 │ block_4_expand_relu[0][0]  │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_4_depthwise_BN          │ (None, 28, 28, 192)       │             768 │ block_4_depthwise[0][0]    │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_4_depthwise_relu (ReLU) │ (None, 28, 28, 192)       │               0 │ block_4_depthwise_BN[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_4_project (Conv2D)      │ (None, 28, 28, 32)        │           6,144 │ block_4_depthwise_relu[0]… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_4_project_BN            │ (None, 28, 28, 32)        │             128 │ block_4_project[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_4_add (Add)             │ (None, 28, 28, 32)        │               0 │ block_3_project_BN[0][0],  │
-│                               │                           │                 │ block_4_project_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_5_expand (Conv2D)       │ (None, 28, 28, 192)       │           6,144 │ block_4_add[0][0]          │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_5_expand_BN             │ (None, 28, 28, 192)       │             768 │ block_5_expand[0][0]       │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_5_expand_relu (ReLU)    │ (None, 28, 28, 192)       │               0 │ block_5_expand_BN[0][0]    │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_5_depthwise             │ (None, 28, 28, 192)       │           1,728 │ block_5_expand_relu[0][0]  │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_5_depthwise_BN          │ (None, 28, 28, 192)       │             768 │ block_5_depthwise[0][0]    │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_5_depthwise_relu (ReLU) │ (None, 28, 28, 192)       │               0 │ block_5_depthwise_BN[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_5_project (Conv2D)      │ (None, 28, 28, 32)        │           6,144 │ block_5_depthwise_relu[0]… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_5_project_BN            │ (None, 28, 28, 32)        │             128 │ block_5_project[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_5_add (Add)             │ (None, 28, 28, 32)        │               0 │ block_4_add[0][0],         │
-│                               │                           │                 │ block_5_project_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_6_expand (Conv2D)       │ (None, 28, 28, 192)       │           6,144 │ block_5_add[0][0]          │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_6_expand_BN             │ (None, 28, 28, 192)       │             768 │ block_6_expand[0][0]       │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_6_expand_relu (ReLU)    │ (None, 28, 28, 192)       │               0 │ block_6_expand_BN[0][0]    │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_6_pad (ZeroPadding2D)   │ (None, 29, 29, 192)       │               0 │ block_6_expand_relu[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_6_depthwise             │ (None, 14, 14, 192)       │           1,728 │ block_6_pad[0][0]          │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_6_depthwise_BN          │ (None, 14, 14, 192)       │             768 │ block_6_depthwise[0][0]    │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_6_depthwise_relu (ReLU) │ (None, 14, 14, 192)       │               0 │ block_6_depthwise_BN[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_6_project (Conv2D)      │ (None, 14, 14, 64)        │          12,288 │ block_6_depthwise_relu[0]… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_6_project_BN            │ (None, 14, 14, 64)        │             256 │ block_6_project[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_7_expand (Conv2D)       │ (None, 14, 14, 384)       │          24,576 │ block_6_project_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_7_expand_BN             │ (None, 14, 14, 384)       │           1,536 │ block_7_expand[0][0]       │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_7_expand_relu (ReLU)    │ (None, 14, 14, 384)       │               0 │ block_7_expand_BN[0][0]    │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_7_depthwise             │ (None, 14, 14, 384)       │           3,456 │ block_7_expand_relu[0][0]  │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_7_depthwise_BN          │ (None, 14, 14, 384)       │           1,536 │ block_7_depthwise[0][0]    │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_7_depthwise_relu (ReLU) │ (None, 14, 14, 384)       │               0 │ block_7_depthwise_BN[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_7_project (Conv2D)      │ (None, 14, 14, 64)        │          24,576 │ block_7_depthwise_relu[0]… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_7_project_BN            │ (None, 14, 14, 64)        │             256 │ block_7_project[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_7_add (Add)             │ (None, 14, 14, 64)        │               0 │ block_6_project_BN[0][0],  │
-│                               │                           │                 │ block_7_project_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_8_expand (Conv2D)       │ (None, 14, 14, 384)       │          24,576 │ block_7_add[0][0]          │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_8_expand_BN             │ (None, 14, 14, 384)       │           1,536 │ block_8_expand[0][0]       │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_8_expand_relu (ReLU)    │ (None, 14, 14, 384)       │               0 │ block_8_expand_BN[0][0]    │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_8_depthwise             │ (None, 14, 14, 384)       │           3,456 │ block_8_expand_relu[0][0]  │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_8_depthwise_BN          │ (None, 14, 14, 384)       │           1,536 │ block_8_depthwise[0][0]    │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_8_depthwise_relu (ReLU) │ (None, 14, 14, 384)       │               0 │ block_8_depthwise_BN[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_8_project (Conv2D)      │ (None, 14, 14, 64)        │          24,576 │ block_8_depthwise_relu[0]… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_8_project_BN            │ (None, 14, 14, 64)        │             256 │ block_8_project[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_8_add (Add)             │ (None, 14, 14, 64)        │               0 │ block_7_add[0][0],         │
-│                               │                           │                 │ block_8_project_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_9_expand (Conv2D)       │ (None, 14, 14, 384)       │          24,576 │ block_8_add[0][0]          │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_9_expand_BN             │ (None, 14, 14, 384)       │           1,536 │ block_9_expand[0][0]       │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_9_expand_relu (ReLU)    │ (None, 14, 14, 384)       │               0 │ block_9_expand_BN[0][0]    │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_9_depthwise             │ (None, 14, 14, 384)       │           3,456 │ block_9_expand_relu[0][0]  │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_9_depthwise_BN          │ (None, 14, 14, 384)       │           1,536 │ block_9_depthwise[0][0]    │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_9_depthwise_relu (ReLU) │ (None, 14, 14, 384)       │               0 │ block_9_depthwise_BN[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_9_project (Conv2D)      │ (None, 14, 14, 64)        │          24,576 │ block_9_depthwise_relu[0]… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_9_project_BN            │ (None, 14, 14, 64)        │             256 │ block_9_project[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_9_add (Add)             │ (None, 14, 14, 64)        │               0 │ block_8_add[0][0],         │
-│                               │                           │                 │ block_9_project_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_10_expand (Conv2D)      │ (None, 14, 14, 384)       │          24,576 │ block_9_add[0][0]          │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_10_expand_BN            │ (None, 14, 14, 384)       │           1,536 │ block_10_expand[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_10_expand_relu (ReLU)   │ (None, 14, 14, 384)       │               0 │ block_10_expand_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_10_depthwise            │ (None, 14, 14, 384)       │           3,456 │ block_10_expand_relu[0][0] │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_10_depthwise_BN         │ (None, 14, 14, 384)       │           1,536 │ block_10_depthwise[0][0]   │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_10_depthwise_relu       │ (None, 14, 14, 384)       │               0 │ block_10_depthwise_BN[0][… │
-│ (ReLU)                        │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_10_project (Conv2D)     │ (None, 14, 14, 96)        │          36,864 │ block_10_depthwise_relu[0… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_10_project_BN           │ (None, 14, 14, 96)        │             384 │ block_10_project[0][0]     │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_11_expand (Conv2D)      │ (None, 14, 14, 576)       │          55,296 │ block_10_project_BN[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_11_expand_BN            │ (None, 14, 14, 576)       │           2,304 │ block_11_expand[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_11_expand_relu (ReLU)   │ (None, 14, 14, 576)       │               0 │ block_11_expand_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_11_depthwise            │ (None, 14, 14, 576)       │           5,184 │ block_11_expand_relu[0][0] │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_11_depthwise_BN         │ (None, 14, 14, 576)       │           2,304 │ block_11_depthwise[0][0]   │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_11_depthwise_relu       │ (None, 14, 14, 576)       │               0 │ block_11_depthwise_BN[0][… │
-│ (ReLU)                        │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_11_project (Conv2D)     │ (None, 14, 14, 96)        │          55,296 │ block_11_depthwise_relu[0… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_11_project_BN           │ (None, 14, 14, 96)        │             384 │ block_11_project[0][0]     │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_11_add (Add)            │ (None, 14, 14, 96)        │               0 │ block_10_project_BN[0][0], │
-│                               │                           │                 │ block_11_project_BN[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_12_expand (Conv2D)      │ (None, 14, 14, 576)       │          55,296 │ block_11_add[0][0]         │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_12_expand_BN            │ (None, 14, 14, 576)       │           2,304 │ block_12_expand[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_12_expand_relu (ReLU)   │ (None, 14, 14, 576)       │               0 │ block_12_expand_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_12_depthwise            │ (None, 14, 14, 576)       │           5,184 │ block_12_expand_relu[0][0] │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_12_depthwise_BN         │ (None, 14, 14, 576)       │           2,304 │ block_12_depthwise[0][0]   │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_12_depthwise_relu       │ (None, 14, 14, 576)       │               0 │ block_12_depthwise_BN[0][… │
-│ (ReLU)                        │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_12_project (Conv2D)     │ (None, 14, 14, 96)        │          55,296 │ block_12_depthwise_relu[0… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_12_project_BN           │ (None, 14, 14, 96)        │             384 │ block_12_project[0][0]     │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_12_add (Add)            │ (None, 14, 14, 96)        │               0 │ block_11_add[0][0],        │
-│                               │                           │                 │ block_12_project_BN[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_13_expand (Conv2D)      │ (None, 14, 14, 576)       │          55,296 │ block_12_add[0][0]         │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_13_expand_BN            │ (None, 14, 14, 576)       │           2,304 │ block_13_expand[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_13_expand_relu (ReLU)   │ (None, 14, 14, 576)       │               0 │ block_13_expand_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_13_pad (ZeroPadding2D)  │ (None, 15, 15, 576)       │               0 │ block_13_expand_relu[0][0] │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_13_depthwise            │ (None, 7, 7, 576)         │           5,184 │ block_13_pad[0][0]         │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_13_depthwise_BN         │ (None, 7, 7, 576)         │           2,304 │ block_13_depthwise[0][0]   │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_13_depthwise_relu       │ (None, 7, 7, 576)         │               0 │ block_13_depthwise_BN[0][… │
-│ (ReLU)                        │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_13_project (Conv2D)     │ (None, 7, 7, 160)         │          92,160 │ block_13_depthwise_relu[0… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_13_project_BN           │ (None, 7, 7, 160)         │             640 │ block_13_project[0][0]     │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_14_expand (Conv2D)      │ (None, 7, 7, 960)         │         153,600 │ block_13_project_BN[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_14_expand_BN            │ (None, 7, 7, 960)         │           3,840 │ block_14_expand[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_14_expand_relu (ReLU)   │ (None, 7, 7, 960)         │               0 │ block_14_expand_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_14_depthwise            │ (None, 7, 7, 960)         │           8,640 │ block_14_expand_relu[0][0] │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_14_depthwise_BN         │ (None, 7, 7, 960)         │           3,840 │ block_14_depthwise[0][0]   │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_14_depthwise_relu       │ (None, 7, 7, 960)         │               0 │ block_14_depthwise_BN[0][… │
-│ (ReLU)                        │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_14_project (Conv2D)     │ (None, 7, 7, 160)         │         153,600 │ block_14_depthwise_relu[0… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_14_project_BN           │ (None, 7, 7, 160)         │             640 │ block_14_project[0][0]     │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_14_add (Add)            │ (None, 7, 7, 160)         │               0 │ block_13_project_BN[0][0], │
-│                               │                           │                 │ block_14_project_BN[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_15_expand (Conv2D)      │ (None, 7, 7, 960)         │         153,600 │ block_14_add[0][0]         │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_15_expand_BN            │ (None, 7, 7, 960)         │           3,840 │ block_15_expand[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_15_expand_relu (ReLU)   │ (None, 7, 7, 960)         │               0 │ block_15_expand_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_15_depthwise            │ (None, 7, 7, 960)         │           8,640 │ block_15_expand_relu[0][0] │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_15_depthwise_BN         │ (None, 7, 7, 960)         │           3,840 │ block_15_depthwise[0][0]   │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_15_depthwise_relu       │ (None, 7, 7, 960)         │               0 │ block_15_depthwise_BN[0][… │
-│ (ReLU)                        │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_15_project (Conv2D)     │ (None, 7, 7, 160)         │         153,600 │ block_15_depthwise_relu[0… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_15_project_BN           │ (None, 7, 7, 160)         │             640 │ block_15_project[0][0]     │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_15_add (Add)            │ (None, 7, 7, 160)         │               0 │ block_14_add[0][0],        │
-│                               │                           │                 │ block_15_project_BN[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_16_expand (Conv2D)      │ (None, 7, 7, 960)         │         153,600 │ block_15_add[0][0]         │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_16_expand_BN            │ (None, 7, 7, 960)         │           3,840 │ block_16_expand[0][0]      │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_16_expand_relu (ReLU)   │ (None, 7, 7, 960)         │               0 │ block_16_expand_BN[0][0]   │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_16_depthwise            │ (None, 7, 7, 960)         │           8,640 │ block_16_expand_relu[0][0] │
-│ (DepthwiseConv2D)             │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_16_depthwise_BN         │ (None, 7, 7, 960)         │           3,840 │ block_16_depthwise[0][0]   │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_16_depthwise_relu       │ (None, 7, 7, 960)         │               0 │ block_16_depthwise_BN[0][… │
-│ (ReLU)                        │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_16_project (Conv2D)     │ (None, 7, 7, 320)         │         307,200 │ block_16_depthwise_relu[0… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ block_16_project_BN           │ (None, 7, 7, 320)         │           1,280 │ block_16_project[0][0]     │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ Conv_1 (Conv2D)               │ (None, 7, 7, 1280)        │         409,600 │ block_16_project_BN[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ Conv_1_bn                     │ (None, 7, 7, 1280)        │           5,120 │ Conv_1[0][0]               │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ out_relu (ReLU)               │ (None, 7, 7, 1280)        │               0 │ Conv_1_bn[0][0]            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ global_average_pooling2d      │ (None, 1280)              │               0 │ out_relu[0][0]             │
-│ (GlobalAveragePooling2D)      │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ batch_normalization           │ (None, 1280)              │           5,120 │ global_average_pooling2d[… │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ dense (Dense)                 │ (None, 512)               │         655,872 │ batch_normalization[0][0]  │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ dropout (Dropout)             │ (None, 512)               │               0 │ dense[0][0]                │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ batch_normalization_1         │ (None, 512)               │           2,048 │ dropout[0][0]              │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ dense_1 (Dense)               │ (None, 256)               │         131,328 │ batch_normalization_1[0][… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ dropout_1 (Dropout)           │ (None, 256)               │               0 │ dense_1[0][0]              │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ batch_normalization_2         │ (None, 256)               │           1,024 │ dropout_1[0][0]            │
-│ (BatchNormalization)          │                           │                 │                            │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ dense_2 (Dense)               │ (None, 128)               │          32,896 │ batch_normalization_2[0][… │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ dropout_2 (Dropout)           │ (None, 128)               │               0 │ dense_2[0][0]              │
-├───────────────────────────────┼───────────────────────────┼─────────────────┼────────────────────────────┤
-│ output (Dense)                │ (None, 3)                 │             387 │ dropout_2[0][0]            │
-└───────────────────────────────┴───────────────────────────┴─────────────────┴────────────────────────────┘
- Total params: 3,086,659 (11.77 MB)
- Trainable params: 2,350,979 (8.97 MB)
- Non-trainable params: 735,680 (2.81 MB)
-```
-
-
-comando para generar el apk 
-
-"cd /home/raucrow/jc2dev/Whitefly_detector/frontend
-flutter build apk --release"
-
-
-cuando no detecta el telefono
-
-adb devices
-
-Autorizar la depuración USB
-adb kill-server && adb start-server
-
-
-entorno del back
-
-source venv/bin/activate 
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+**✨ ¡Tu feedback es valioso para mejorar el sistema!**
