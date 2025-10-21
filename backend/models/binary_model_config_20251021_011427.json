@@ -1,0 +1,32 @@
+{
+    "model_info": {
+        "type": "binary_classification",
+        "architecture": "mobilenet",
+        "img_size": [
+            224,
+            224
+        ],
+        "batch_size": 16,
+        "initial_lr": 0.0001,
+        "total_params": 2625601,
+        "timestamp": "20251021_011427",
+        "file_size_mb": 13.338775634765625
+    },
+    "binary_config": {
+        "output_neurons": 1,
+        "activation": "sigmoid",
+        "loss_function": "binary_crossentropy",
+        "threshold": 0.5
+    },
+    "classes": {
+        "class_0": "con_mosca_blanca",
+        "class_1": "sin_mosca_blanca",
+        "mapping": "output > 0.5 = sin_mosca_blanca, output <= 0.5 = con_mosca_blanca"
+    },
+    "usage_instructions": {
+        "preprocessing": "Resize to 224x224, normalize to [0,1]",
+        "input_format": "RGB image array",
+        "output_format": "Single probability [0-1]",
+        "interpretation": "> 0.5 = sin_mosca_blanca, <= 0.5 = con_mosca_blanca"
+    }
+}
