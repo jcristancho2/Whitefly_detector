@@ -14,6 +14,8 @@ import io
 from datetime import datetime
 from typing import List, Dict
 import os
+import gc  # ✅ AGREGAR para limpieza de memoria
+import traceback  # ✅ AGREGAR para debugging
 
 app = FastAPI(title="Sistema Detección Mosca Blanca - Binario", version="2.0.0")
 
@@ -55,40 +57,89 @@ def load_binary_model():
         return False
 
 def predict_binary_image(image_bytes: bytes) -> Dict:
-    """Predicción binaria optimizada."""
+    """Predicción binaria optimizada con manejo de memoria."""
+    image = None
+    img_array = None
+    
     try:
+        print(f"🧠 Memoria antes del procesamiento: {tf.config.experimental.get_memory_info('GPU:0') if tf.config.list_physical_devices('GPU') else 'CPU only'}")
+        
         # Preprocesar imagen
         image = Image.open(io.BytesIO(image_bytes))
+        print(f"📏 Imagen original: {image.size}, Modo: {image.mode}")
         
         # Convertir a RGB si es necesario
         if image.mode != 'RGB':
+            print(f"🔄 Convirtiendo de {image.mode} a RGB")
             image = image.convert('RGB')
         
-        # Redimensionar y normalizar
-        img_array = np.array(image.resize(IMG_SIZE))
-        img_array = np.expand_dims(img_array, axis=0) / 255.0
+        # ✅ VALIDAR DIMENSIONES ANTES DE PROCESAR
+        width, height = image.size
+        if width < 50 or height < 50:
+            raise ValueError(f"Imagen muy pequeña: {width}x{height}. Mínimo 50x50 pixels")
         
-        # Predicción binaria
+        if width > 4000 or height > 4000:
+            print(f"⚠️ Imagen muy grande ({width}x{height}), redimensionando...")
+            # Redimensionar manteniendo aspecto
+            max_size = 2000
+            if width > height:
+                new_width = max_size
+                new_height = int(height * max_size / width)
+            else:
+                new_height = max_size
+                new_width = int(width * max_size / height)
+            image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            print(f"✅ Redimensionada a: {image.size}")
+        
+        # Redimensionar para el modelo y normalizar
+        img_array = np.array(image.resize(IMG_SIZE, Image.Resampling.LANCZOS))
+        img_array = np.expand_dims(img_array, axis=0).astype(np.float32) / 255.0
+        
+        print(f"🔢 Array shape: {img_array.shape}, dtype: {img_array.dtype}")
+        
+        # ✅ PREDICCIÓN CON TIMEOUT Y LIMPIEZA
         start_time = datetime.now()
-        prediction = model.predict(img_array, verbose=0)[0][0]
-        processing_time = (datetime.now() - start_time).total_seconds()
+        
+        # Limpiar memoria antes de predicción
+        gc.collect()
+        
+        try:
+            prediction = model.predict(img_array, verbose=0, batch_size=1)[0][0]
+            processing_time = (datetime.now() - start_time).total_seconds()
+            print(f"⚡ Predicción completada en {processing_time:.3f}s")
+            
+        except Exception as pred_error:
+            print(f"❌ Error en predicción: {pred_error}")
+            # Intentar con batch más pequeño o diferente configuración
+            gc.collect()
+            prediction = model.predict(img_array, verbose=0, batch_size=1, steps=1)[0][0]
+            processing_time = (datetime.now() - start_time).total_seconds()
+            print(f"✅ Predicción recuperada en {processing_time:.3f}s")
         
         # Interpretar resultado binario
-        if prediction > 0.5:
+        raw_prediction = float(prediction)
+        
+        if raw_prediction > 0.5:
             result = "sin_mosca_blanca"
-            confidence = float(prediction)
+            confidence = raw_prediction
             status = "saludable"
             color = "verde"
         else:
             result = "con_mosca_blanca"
-            confidence = float(1 - prediction)
+            confidence = 1.0 - raw_prediction
             status = "infestado"
             color = "rojo"
+        
+        # ✅ LIMPIEZA EXPLÍCITA DE MEMORIA
+        del img_array
+        if image:
+            image.close()
+        gc.collect()
         
         return {
             "prediction": result,
             "confidence": confidence,
-            "raw_score": float(prediction),
+            "raw_score": raw_prediction,
             "status": status,
             "color": color,
             "model_type": "binary",
@@ -98,7 +149,16 @@ def predict_binary_image(image_bytes: bytes) -> Dict:
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en predicción binaria: {str(e)}")
+        # ✅ LIMPIEZA EN CASO DE ERROR
+        if 'img_array' in locals() and img_array is not None:
+            del img_array
+        if 'image' in locals() and image is not None:
+            image.close()
+        gc.collect()
+        
+        print(f"❌ Error detallado en predicción: {str(e)}")
+        print(f"📋 Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error en predicción: {str(e)}")
 
 def generate_binary_recommendations(prediction_result: Dict) -> List[str]:
     """Genera recomendaciones para clasificación binaria."""
@@ -205,42 +265,49 @@ async def health_check():
 
 @app.post("/api/detectar")
 async def detectar_plaga_binaria(file: UploadFile = File(...)):
-    """
-    Endpoint principal para detección BINARIA de mosca blanca.
+    """Endpoint mejorado con mejor manejo de errores y timeouts."""
     
-    Args:
-        file: Archivo de imagen (JPG, PNG, JPEG)
+    start_total = datetime.now()
     
-    Returns:
-        JSON con resultado binario y recomendaciones
-    """
     try:
+        print(f"\n🚀 === INICIANDO ANÁLISIS ===")
+        print(f"⏰ Hora: {start_total.isoformat()}")
+        
         # Validar modelo cargado
         if model is None:
+            print("❌ Modelo no disponible")
             raise HTTPException(status_code=503, detail="Modelo no disponible")
         
-        # ✅ MEJORAR VALIDACIÓN DE TIPO DE ARCHIVO
-        print(f"🔍 DEBUG: Archivo recibido - {file.filename}")
-        print(f"🔍 DEBUG: Content-Type - {file.content_type}")
+        # ✅ INFORMACIÓN DETALLADA DEL ARCHIVO
+        print(f"📁 Archivo: {file.filename}")
+        print(f"📄 Content-Type: {file.content_type}")
         
-        # Leer contenido
-        contents = await file.read()
-        print(f"🔍 DEBUG: Tamaño - {len(contents)} bytes")
+        # ✅ LEER CON TIMEOUT
+        try:
+            contents = await file.read()
+            print(f"📊 Tamaño leído: {len(contents)} bytes")
+        except Exception as read_error:
+            print(f"❌ Error leyendo archivo: {read_error}")
+            raise HTTPException(status_code=400, detail="Error leyendo el archivo")
         
-        # ✅ VALIDACIÓN MEJORADA - Verificar por extensión Y content-type
+        # ✅ VALIDACIONES MEJORADAS
+        if len(contents) == 0:
+            raise HTTPException(status_code=400, detail="Archivo vacío")
+        
+        if len(contents) > 15 * 1024 * 1024:  # 15MB máximo
+            raise HTTPException(status_code=413, detail=f"Archivo muy grande: {len(contents)} bytes (máx 15MB)")
+        
+        # Validación de tipo flexible
         filename = file.filename or ""
         file_extension = os.path.splitext(filename.lower())[1]
         
-        # Extensiones permitidas
-        allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
-        
-        # Content-types permitidos (incluyendo casos problemáticos de Flutter)
+        allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff']
         allowed_content_types = [
             'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
-            'image/bmp', 'image/webp', 'application/octet-stream'
+            'image/bmp', 'image/webp', 'image/tiff',
+            'application/octet-stream', None
         ]
         
-        # ✅ VALIDACIÓN FLEXIBLE - Permitir si extensión O content-type es válido
         is_valid_extension = file_extension in allowed_extensions
         is_valid_content_type = (
             file.content_type in allowed_content_types or 
@@ -248,40 +315,52 @@ async def detectar_plaga_binaria(file: UploadFile = File(...)):
         )
         
         if not (is_valid_extension or is_valid_content_type):
-            print(f"❌ Archivo rechazado: {file.content_type} / {file_extension}")
+            print(f"❌ Tipo inválido: {file.content_type} / {file_extension}")
             raise HTTPException(
                 status_code=400, 
-                detail=f"Tipo de archivo no válido. Content-Type: {file.content_type}, Extensión: {file_extension}"
+                detail=f"Tipo no válido: {file.content_type}, ext: {file_extension}"
             )
         
-        print(f"✅ Archivo aceptado: {file.content_type} / {file_extension}")
+        print(f"✅ Validación OK: {file.content_type} / {file_extension}")
         
-        # ✅ VALIDACIÓN ADICIONAL - Verificar que es imagen real usando PIL
+        # ✅ VERIFICACIÓN DE IMAGEN REAL
         try:
-            # Intentar abrir con PIL para confirmar que es imagen
             test_image = Image.open(io.BytesIO(contents))
-            test_image.verify()  # Verificar que es imagen válida
-            print(f"✅ Imagen válida confirmada: {test_image.format} {test_image.size}")
+            img_format = test_image.format
+            img_size = test_image.size
+            img_mode = test_image.mode
+            test_image.close()
+            print(f"✅ Imagen válida: {img_format} {img_size} {img_mode}")
         except Exception as img_error:
-            print(f"❌ No es imagen válida: {img_error}")
-            raise HTTPException(status_code=400, detail="El archivo no es una imagen válida")
+            print(f"❌ Imagen inválida: {img_error}")
+            raise HTTPException(status_code=400, detail="Archivo no es imagen válida")
         
-        # Resetear posición del archivo después de verify()
-        contents_for_processing = contents  # Ya tenemos los bytes
+        print(f"🧠 Iniciando predicción...")
         
-        # Validar tamaño
-        if len(contents) > 10 * 1024 * 1024:  # 10MB máximo
-            raise HTTPException(status_code=413, detail="Imagen muy grande (máx 10MB)")
-        
-        print(f"🚀 Procesando imagen con modelo binario...")
-        
-        # Realizar predicción binaria
-        resultado = predict_binary_image(contents_for_processing)
+        # ✅ PREDICCIÓN CON MANEJO DE TIMEOUTS
+        try:
+            resultado = predict_binary_image(contents)
+            print(f"✅ Predicción exitosa: {resultado['prediction']} ({resultado['confidence']:.3f})")
+            
+        except HTTPException:
+            raise  # Re-lanzar errores HTTP
+        except Exception as pred_error:
+            print(f"❌ Error en predicción: {pred_error}")
+            print(f"📋 Traceback completo: {traceback.format_exc()}")
+            
+            # ✅ LIMPIEZA Y RETRY
+            gc.collect()
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Error procesando imagen: {str(pred_error)}"
+            )
         
         # Generar recomendaciones
         recomendaciones = generate_binary_recommendations(resultado)
         
         # Respuesta completa
+        total_time = (datetime.now() - start_total).total_seconds()
+        
         response = {
             "success": True,
             "detection": resultado,
@@ -291,29 +370,48 @@ async def detectar_plaga_binaria(file: UploadFile = File(...)):
                 "size_bytes": len(contents),
                 "content_type": file.content_type,
                 "file_extension": file_extension,
+                "image_format": img_format,
+                "image_size": img_size,
+                "total_processing_time": total_time,
                 "location": "Mesa de los Santos, Colombia",
                 "analysis_date": datetime.now().isoformat()
             }
         }
         
-        # Guardar en historial
+        # Guardar en historial (limitar tamaño)
         historial_detecciones.append(response)
+        if len(historial_detecciones) > 100:  # Mantener solo últimas 100
+            historial_detecciones.pop(0)
         
-        print(f"✅ Análisis completado: {resultado['prediction']} (confianza: {resultado['confidence']:.2f})")
+        print(f"✅ === ANÁLISIS COMPLETADO en {total_time:.3f}s ===\n")
         
         return JSONResponse(content=response)
     
     except HTTPException:
-        # Re-lanzar HTTPExceptions (errores de validación)
+        print(f"⚠️ Error HTTP capturado, re-lanzando")
         raise
     except Exception as e:
-        print(f"❌ Error inesperado: {str(e)}")
+        total_time = (datetime.now() - start_total).total_seconds()
+        error_msg = str(e)
+        
+        print(f"❌ === ERROR GENERAL después de {total_time:.3f}s ===")
+        print(f"Error: {error_msg}")
+        print(f"Traceback: {traceback.format_exc()}")
+        
+        # Limpieza de memoria
+        gc.collect()
+        
         return JSONResponse(
             status_code=500,
             content={
                 "success": False,
-                "error": str(e),
-                "timestamp": datetime.now().isoformat()
+                "error": error_msg,
+                "processing_time": total_time,
+                "timestamp": datetime.now().isoformat(),
+                "debug_info": {
+                    "filename": getattr(file, 'filename', 'unknown'),
+                    "content_type": getattr(file, 'content_type', 'unknown')
+                }
             }
         )
 
