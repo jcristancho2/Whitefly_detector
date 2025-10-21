@@ -117,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: const Column(
                   children: [
                     Text(
-                      'CoffeeGuard Pro',
+                      'LechGuard Pro',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,

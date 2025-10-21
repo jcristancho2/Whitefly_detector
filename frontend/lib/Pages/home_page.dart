@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           const SizedBox(width: 12),
           const Expanded(
             child: Text(
-              'CoffeeGuard Pro',
+              'lechGuard Pro',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -369,7 +369,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ),
                 Text(
-                  'Detecta plagas en tus cultivos de café',
+                  'Detecta plagas en tus cultivos hidrponicos',
                   style: TextStyle(color: Colors.white70, fontSize: 16),
                 ),
               ],
