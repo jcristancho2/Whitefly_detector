@@ -44,7 +44,7 @@ class ApiService {
       bool canConnect = await testConnectionBeforeAnalysis();
       if (!canConnect) {
         throw Exception(
-          'No se puede conectar al servidor en 192.168.1.7:8000. Verifica que esté corriendo.',
+          'No se puede conectar al servidor en $baseUrl:8000. Verifica que esté corriendo.',
         );
       }
 

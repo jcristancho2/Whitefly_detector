@@ -1,7 +1,18 @@
-
 # 🌱 Sistema de Detección de Mosca Blanca
 
+![Visión por Computadora](https://img.shields.io/badge/IA-Visi%C3%B3n%20por%20Computadora-green?style=for-the-badge)
+![Backend FastAPI](https://img.shields.io/badge/Backend-FastAPI-blue?style=for-the-badge)
+![Frontend Flutter](https://img.shields.io/badge/Frontend-Flutter-blueviolet?style=for-the-badge)
+![Modelo TensorFlow](https://img.shields.io/badge/Modelo-TensorFlow-orange?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.10+-yellow?style=for-the-badge)
+![Android](https://img.shields.io/badge/Android-Tested-green?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
+
+---
+
 Sistema inteligente para la detección automática de infestaciones de mosca blanca en cultivos usando visión por computadora y redes neuronales convolucionales.
+
+---
 
 ## 📋 Tabla de Contenidos
 
@@ -21,18 +32,13 @@ Sistema inteligente para la detección automática de infestaciones de mosca bla
 - [Solución de Problemas](#solución-de-problemas)
 - [Scripts de Utilidad](#scripts-de-utilidad)
 
-## 📖 Descripción
+## 📝 Descripción
 
 Este proyecto utiliza técnicas de machine learning para detectar y clasificar infestaciones de mosca blanca en cultivos agrícolas. El sistema puede funcionar en dos modos:
 
 ### **Modo Binario (Recomendado):**
 - 🟢 **Sin plaga**: Planta saludable
 - 🔴 **Con plaga**: Presencia de mosca blanca (cualquier nivel)
-
-### **Modo Multiclase:**
-- 🟢 **Sin plaga**: Planta saludable
-- 🟡 **Infestación leve**: Presencia mínima de mosca blanca
-- 🔴 **Infestación severa**: Alta concentración de mosca blanca
 
 ## ✨ Características
 
@@ -175,7 +181,75 @@ cd Whitefly_detector
 
 ## ⚙️ Configuración y Uso
 
-### 1. Estructura de Dataset (Opcional)
+### 1. Variables de entorno
+
+#### Backend (`backend/.env`)
+```
+API_HOST=0.0.0.0
+API_PORT=8000
+API_BASE_URL=http://<IP_DE_TU_PC>:8000
+```
+
+#### Frontend (`frontend/.env`)
+```
+API_BASE_URL=http://<IP_DE_TU_PC>:8000
+```
+> Reemplaza `<IP_DE_TU_PC>` por la IP local de tu PC.  
+> Puedes obtenerla con:  
+> `ip route get 8.8.8.8 | grep -oP 'src \K\S+'`
+
+### 2. Incluir `.env` en Flutter
+
+Agrega en tu `pubspec.yaml`:
+```yaml
+flutter:
+  assets:
+    - .env
+```
+
+---
+
+## 🚀 Ejecución
+
+### 1. Iniciar el backend
+
+```bash
+cd backend
+source venv/bin/activate
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+### 2. Iniciar la app Flutter en el dispositivo
+
+Conecta el dispositivo (probado en Honor X7a, ID: `A93Q9X3608G00492`), activa la depuración USB y ejecuta:
+
+```bash
+cd frontend
+flutter run -d A93Q9X3608G00492
+```
+
+---
+
+## ⚡ Funcionamiento de la Aplicación
+
+1. El usuario abre la app Flutter y selecciona o toma una foto de la hoja.
+2. La app envía la imagen al backend usando la IP configurada.
+3. El backend procesa la imagen con el modelo de IA y responde con el diagnóstico.
+4. La app muestra el resultado y recomendaciones.
+5. El usuario puede consultar el historial y estadísticas de análisis.
+
+---
+
+## ℹ️ Notas Importantes
+
+- **El dispositivo móvil debe tener acceso a internet** y estar en la misma red local que el backend (o tener acceso al backend si está en la nube).
+- Si cambias de red WiFi, **actualiza la IP en los archivos `.env`**.
+- El backend debe estar corriendo antes de usar la app.
+- Si tienes problemas de conexión, revisa firewall y asegúrate de que la IP es correcta.
+
+---
+
+### 1. Estructura de Dataset
 
 Para entrenar modelos personalizados:
 
@@ -948,7 +1022,11 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
 **🚀 ¡El sistema está listo para detectar moscas blancas con precisión excepcional!**
 
+---
 
-flutter run -d A93Q9X3608G00492
+## 👨‍💻 Créditos
 
-ip route get 8.8.8.8 | grep -oP 'src \K\S+'
+Desarrollado por:  
+### [Jcristancho2](https://github.com/jcristancho2)
+
+---
