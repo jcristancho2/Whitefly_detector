@@ -947,3 +947,8 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 **🏆 Con un 99.31% de precisión en el conjunto de prueba, este sistema está listo para detectar moscas blancas en entornos de producción agrícola.**
 
 **🚀 ¡El sistema está listo para detectar moscas blancas con precisión excepcional!**
+
+
+flutter run -d A93Q9X3608G00492
+
+ip route get 8.8.8.8 | grep -oP 'src \K\S+'

@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import 'services/theme_service.dart';
 import 'services/bluetooth_service.dart';
 import 'Pages/splash_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
+  await dotenv.load();
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }

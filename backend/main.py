@@ -16,6 +16,14 @@ from typing import List, Dict
 import os
 import gc  # ✅ AGREGAR para limpieza de memoria
 import traceback  # ✅ AGREGAR para debugging
+from dotenv import load_dotenv
+
+# Cargar variables del .env
+load_dotenv()
+
+API_HOST = os.getenv("API_HOST", "0.0.0.0")
+API_PORT = int(os.getenv("API_PORT", 8000))
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 app = FastAPI(title="Sistema Detección Mosca Blanca - Binario", version="2.0.0")
 
@@ -454,4 +462,4 @@ async def obtener_estadisticas_binarias():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=API_HOST, port=API_PORT)

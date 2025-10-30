@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:async'; // ← AÑADIR ESTE IMPORT para TimeoutException
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiService {
-  final String baseUrl = 'http://192.168.1.7:8000';
+  final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
   /// Test de conexión ANTES de analizar
   Future<bool> testConnectionBeforeAnalysis() async {
