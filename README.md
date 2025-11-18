@@ -1024,9 +1024,5 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
 ---
 
-## 👨‍💻 Créditos
-
-Desarrollado por:  
-### [Jcristancho2](https://github.com/jcristancho2)
 
 ---
